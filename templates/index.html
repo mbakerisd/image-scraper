@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Scraper</title>
+    <style>
+        /* General styling */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f6f8;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            margin-top: 40px;
+            color: #4A90E2;
+            font-size: 2em;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        form {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        input[type="text"] {
+            width: 60%;
+            max-width: 500px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            transition: border 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border: 1px solid #4A90E2;
+            outline: none;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #4A90E2;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #357ABD;
+        }
+
+        .url-display {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #4A90E2;
+            word-wrap: break-word;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .download-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .download-buttons button {
+            padding: 10px 15px;
+            font-size: 14px;
+        }
+
+        .image-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            padding: 10px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .image-card {
+            position: relative;
+            width: 200px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .image-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .image-card img {
+            max-width: 100%;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .image-card img:hover {
+            transform: scale(1.05);
+        }
+
+        /* Checkbox and download link */
+        .checkbox-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-top: auto;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            margin: 0;
+        }
+
+        .checkbox-container a {
+            font-size: 14px;
+            color: #4A90E2;
+            text-decoration: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .checkbox-container a:hover {
+            background-color: #E5F1FC;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            input[type="text"] {
+                width: 80%;
+            }
+            
+            .image-card {
+                width: 45%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            input[type="text"] {
+                width: 90%;
+            }
+
+            .image-card {
+                width: 100%;
+            }
+
+            .download-buttons button {
+                font-size: 12px;
+                padding: 8px 12px;
+            }
+        }
+
+        /* Fade-in animation */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+    <script>
+        function toggleSelection(selectAll) {
+            const checkboxes = document.querySelectorAll('.image-checkbox');
+            checkboxes.forEach(cb => cb.checked = selectAll);
+        }
+
+        function downloadSelected() {
+            const selectedImages = Array.from(document.querySelectorAll('.image-checkbox:checked')).map(cb => cb.value);
+            if (selectedImages.length > 0) {
+                const url = '/download_all?' + selectedImages.map(img => 'image_urls=' + encodeURIComponent(img)).join('&');
+                window.location.href = url;
+            } else {
+                alert('No images selected');
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Image Scraper</h1>
+    <form method="POST" action="/">
+        <input type="text" name="url" placeholder="Enter website URL" required>
+        <button type="submit">Scrape Images</button>
+    </form>
+
+    {% if images %}
+        <div class="url-display">Images from: <strong>{{ url }}</strong></div>
+        <div class="download-buttons">
+            <button onclick="toggleSelection(true)">Select All</button>
+            <button onclick="toggleSelection(false)">Deselect All</button>
+            <button onclick="downloadSelected()">Download Selected</button>
+        </div>
+        <div class="image-container">
+            {% for image in images %}
+                <div class="image-card">
+                    <img src="{{ image }}" alt="Image">
+                    <div class="checkbox-container">
+                        <input type="checkbox" class="image-checkbox" value="{{ image }}">
+                        <a href="/download_image?image_url={{ image }}" target="_blank">Download</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</body>
+</html>
